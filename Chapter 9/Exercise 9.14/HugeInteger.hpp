@@ -1,11 +1,11 @@
 /*
 	File: HugeInteger.hpp
-	Version: 1.0
+	Version: 2.0
 	Writer: Kaan Ozdogan
 	Mail: necdetkaanozdogan@gmail.com
 
 	Description: C++ How to Program 9th Edition by Deitel Chapter 9 Exercise 9.14
-				 This program contains add and subtract operations. Multiply, divide, and modulus will come
+				 This program contains addition substraction, multiplication, divison, and modulus operations
 				 Negative values can be useable
 */
 #pragma once
@@ -18,33 +18,44 @@ class HugeInteger
 {
 public:
 	HugeInteger();
+	HugeInteger(const char* hugeIntegerStr);
 	
-	//INPUT-OUTPUT METHODS
-	void inputHugeInteger();
-	void printHugeInteger() const;
-	void printHugeIntegerWithFormat() const;
-	
+	bool isPositive;
+
+	//SETTERS
+	void setHugeInteger(std::string& hugeIntegerStr);
+
 	//GETTERS
 	int getSize() const;
 	
-	//PREDICATE OPERATORS
-	bool isEqualTo(const HugeInteger& other) const;
-	bool isNotEqualTo(const HugeInteger& other) const;
-	bool isGreaterThan(const HugeInteger& other) const;
-	bool isLessThan(const HugeInteger& other) const;
-	bool isGreaterThanOrEqual(const HugeInteger& other) const;
-	bool isLessThanOrEqual(const HugeInteger& other) const;
+	//PREDICATE OPERATIONS
+	bool isZero() const;
+	bool operator==(const HugeInteger& other) const;
+	bool operator!=(const HugeInteger& other) const;
+	bool operator>(const HugeInteger& other) const;
+	bool operator<(const HugeInteger& other) const;
+	bool operator>=(const HugeInteger& other) const;
+	bool operator<=(const HugeInteger& other) const;
 	bool isGreaterThanAbsolute(const HugeInteger& other) const;
+	bool isEqualAbsolute(const HugeInteger& other) const;
 
-	//ARITHMETIC OPERATORS
+	//ARITHMETIC OPERATIONS
+	HugeInteger operator++();
+	HugeInteger operator--();
 	HugeInteger operator+(HugeInteger& other);
 	HugeInteger operator-(HugeInteger& other);
+	HugeInteger operator*(HugeInteger& other);
+	HugeInteger operator/(HugeInteger& other);
+	HugeInteger operator%(HugeInteger& other);
+	
+	//INPUT-OUTPUT OPERATIONS
+	friend std::istream& operator>>(std::istream& stream, HugeInteger& other);
+	friend std::ostream& operator<<(std::ostream& stream, const HugeInteger& other);
 
 private:
 	int hugeInteger[MAX_SIZE_OF_HUGE_INTEGER + 1]; 
 	int reverseHugeInteger[MAX_SIZE_OF_HUGE_INTEGER + 1]; 
 	int hugeIntegerSize; 
-	bool isPositive; 
 	std::string hugeIntegerStr;
 	
 	//UTILITY METHODS
@@ -55,7 +66,8 @@ private:
 	void setSizeFromReverse();
 	void tuneSmallForOperations(HugeInteger& smallHugeInteger);
 	void repairReverseIfZerosInTheBeginning();
+	HugeInteger incrementOperation();
+	HugeInteger decrementOperation();
 	HugeInteger addOperation(HugeInteger& other, bool isOtherChanged);
 	HugeInteger subtractOperation(HugeInteger& other);
-	void printReverseHugeInt(); //todo: delete
 };
