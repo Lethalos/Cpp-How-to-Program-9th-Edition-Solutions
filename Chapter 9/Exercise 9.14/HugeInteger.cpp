@@ -1,15 +1,14 @@
 /*
 	File: HugeInteger.cpp
-	Version: 1.0
+	Version: 2.0
 	Writer: Kaan Ozdogan
 	Mail: necdetkaanozdogan@gmail.com
 
 	Description: C++ How to Program 9th Edition by Deitel Chapter 9 Exercise 9.14
-				 This program contains add and subtract operations. Multiply, divide, and modulus will come
+				 This program contains addition substraction, multiplication, divison, and modulus operations
 				 Negative values can be useable
 */
 #include<stdexcept>
-#include<iomanip>
 #include"HugeInteger.hpp"
 
 HugeInteger::HugeInteger()
@@ -23,14 +22,27 @@ HugeInteger::HugeInteger()
 	isPositive = true;
 }
 
-void HugeInteger::inputHugeInteger()
+HugeInteger::HugeInteger(const char* hugeIntegerStr)
 {
-	std::cout << "Please input your huge integer: ";
-	std::cin >> hugeIntegerStr;
+	for (int i = 0; i < MAX_SIZE_OF_HUGE_INTEGER + 1; i++) {
+		hugeInteger[i] = -1;
+		reverseHugeInteger[i] = -1;
+	}
 
+	std::string str(hugeIntegerStr);
+	this->hugeIntegerStr = str;
+
+	setHugeInteger(this->hugeIntegerStr);
+}
+
+void HugeInteger::setHugeInteger(std::string& hugeIntegerStr)
+{
 	if (hugeIntegerStr[0] == '-') {
 		hugeIntegerStr.erase(0, 1);
 		isPositive = false;
+	}
+	else {
+		isPositive = true;
 	}
 
 	if (hugeIntegerStr[0] == '0') {
@@ -82,44 +94,42 @@ void HugeInteger::setHugeIntegerFromString(const std::string& hugeIntegerStr, co
 	}
 }
 
-void HugeInteger::printHugeInteger() const
-{
-	if (!isPositive) {
-		std::cout << "-";
-	}
-
-	for (int i = 0; i < hugeIntegerSize; i++) {
-		std::cout << hugeInteger[i];
-	}
-}
-
-void HugeInteger::printHugeIntegerWithFormat() const
-{
-	std::cout << "\nSize:" << hugeIntegerSize << "\n";
-
-	std::cout << "Is positive: " << isPositive << "\n\n";
-
-	if (!isPositive) {
-		std::cout << "-";
-	}
-
-	for (int i = 0; i < hugeIntegerSize; i++) {
-		std::cout << hugeInteger[i];
-	}
-
-	std::cout << "\n\n";
-
-	for (int i = 0; i < MAX_SIZE_OF_HUGE_INTEGER; i++) {
-		std::cout << i + 1 << ": " << std::setw(2) << hugeInteger[i] << "\n";
-	}
-}
-
 int HugeInteger::getSize() const
 {
 	return hugeIntegerSize;
 }
 
-bool HugeInteger::isEqualTo(const HugeInteger& other) const
+std::istream& operator>>(std::istream& stream, HugeInteger& other)
+{
+	stream >> other.hugeIntegerStr;
+	other.setHugeInteger(other.hugeIntegerStr);
+
+	return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const HugeInteger& other)
+{
+	if (!other.isPositive) {
+		stream << "-";
+	}
+
+	for (int i = 0; i < other.hugeIntegerSize; i++) {
+		stream << other.hugeInteger[i];
+	}
+
+	return stream;
+}
+
+bool HugeInteger::isZero() const
+{
+	if (hugeInteger[0] == 0 && hugeIntegerSize == 1) {
+		return true;
+	}
+
+	return false;
+}
+
+bool HugeInteger::operator==(const HugeInteger& other) const
 {
 	if (this->isPositive != other.isPositive) {
 		return false;
@@ -134,12 +144,12 @@ bool HugeInteger::isEqualTo(const HugeInteger& other) const
 	return true;
 }
 
-bool HugeInteger::isNotEqualTo(const HugeInteger& other) const
+bool HugeInteger::operator!=(const HugeInteger& other) const
 {
-	return !(this->isEqualTo(other));
+	return !(*this == other);
 }
 
-bool HugeInteger::isGreaterThan(const HugeInteger& other) const
+bool HugeInteger::operator>(const HugeInteger& other) const
 {
 	if (this->isPositive && !other.isPositive) {
 		return true;
@@ -148,43 +158,48 @@ bool HugeInteger::isGreaterThan(const HugeInteger& other) const
 		return false;
 	}
 
+	bool reverseResult = false;
+	if (!this->isPositive && !other.isPositive) {
+		reverseResult = true;
+	}
+
 	if (this->hugeIntegerSize > other.hugeIntegerSize) {
-		return true;
+		return reverseResult ? false : true;
 	}
 	else if (this->hugeIntegerSize == other.hugeIntegerSize) {
 		for (int i = 0; i < hugeIntegerSize; i++) {
 			if (this->hugeInteger[i] > other.hugeInteger[i]) {
-				return true;
+				return reverseResult ? false : true;
 			}
 			else if (this->hugeInteger[i] == other.hugeInteger[i]) {
 				continue;
 			}
 			else {
-				return false;
+				return reverseResult ? true : false;
 			}
 		}
 	}
 
-	return false;
+	return reverseResult ? true : false;
 }
 
-bool HugeInteger::isLessThan(const HugeInteger& other) const
+bool HugeInteger::operator<(const HugeInteger& other) const
 {
-	return !(this->isGreaterThan(other));
+	return !(*this >= other);
 }
 
-bool HugeInteger::isGreaterThanOrEqual(const HugeInteger& other) const
+bool HugeInteger::operator>=(const HugeInteger& other) const
 {
-	if (this->isEqualTo(other) || this->isGreaterThan(other)) {
+	if (*this == other || *this > other) {
 		return true;
 	}
 
 	return false;
 }
 
-bool HugeInteger::isLessThanOrEqual(const HugeInteger& other) const
+bool HugeInteger::operator<=(const HugeInteger& other) const
 {
-	if (this->isEqualTo(other) || this->isLessThan(other)) {
+	if (*this == other || *this < other) {
 		return true;
 	}
 
@@ -212,6 +227,17 @@ bool HugeInteger::isGreaterThanAbsolute(const HugeInteger& other) const
 	}
 
 	return false;
+}
+
+bool HugeInteger::isEqualAbsolute(const HugeInteger& other) const
+{
+	for (int i = 0; i < MAX_SIZE_OF_HUGE_INTEGER; i++) {
+		if (this->hugeInteger[i] != other.hugeInteger[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void HugeInteger::setReverseHugeInteger()
@@ -274,6 +300,85 @@ void HugeInteger::repairReverseIfZerosInTheBeginning()
 }
 
 //ARITHMETIC OPERATIONS
+HugeInteger HugeInteger::operator++()
+{
+	if (isPositive) {
+		return incrementOperation();
+	}
+	else {
+		return decrementOperation();
+	}
+}
+
+HugeInteger HugeInteger::operator--()
+{
+	if (isPositive) {
+		return decrementOperation();
+	}
+	else {
+		return incrementOperation();
+	}
+}
+
+HugeInteger HugeInteger::incrementOperation()
+{
+	reverseHugeInteger[0]++;
+
+	for (int i = 0; reverseHugeInteger[i] > 9; i++) {
+		if (i == hugeIntegerSize - 1) {
+			hugeIntegerSize++;
+			reverseHugeInteger[i + 1] = 0;
+		}
+
+		reverseHugeInteger[i] = 0;
+		reverseHugeInteger[i + 1]++;
+	}
+
+	if (hugeIntegerSize > MAX_SIZE_OF_HUGE_INTEGER) {
+		std::invalid_argument err("a huge integer cannot exceed 40 digits");
+		std::cout << err.what() << std::endl;
+		throw err;
+	}
+
+	setHugeIntegerFromReverse();
+
+	return *this;
+}
+
+HugeInteger HugeInteger::decrementOperation()
+{
+	int i = 0;
+	reverseHugeInteger[i]--;
+
+	if (reverseHugeInteger[i] < 0 && hugeIntegerSize == 1) {
+		reverseHugeInteger[i] = 1;
+		isPositive = false;
+	}
+	else if (reverseHugeInteger[i] == 0 && hugeIntegerSize == 1 && !isPositive) {
+		isPositive = !isPositive;
+	}
+	else if (reverseHugeInteger[i] < 0 && hugeIntegerSize > 1) {
+		reverseHugeInteger[i] = 9;
+
+		while (reverseHugeInteger[i + 1] == 0) {
+			reverseHugeInteger[i + 1] = 9;
+			i++;
+		}
+
+		reverseHugeInteger[i + 1]--;
+
+		if (reverseHugeInteger[hugeIntegerSize - 1] == 0) {
+			reverseHugeInteger[hugeIntegerSize - 1] = -1;
+			hugeInteger[hugeIntegerSize - 1] = -1;
+			hugeIntegerSize--;
+		}
+	}
+
+	setHugeIntegerFromReverse();
+
+	return *this;
+}
+
 HugeInteger HugeInteger::operator+(HugeInteger& other)
 {
 	if (this->isPositive && other.isPositive) { //positive-positive e.g, (+10) + (+5) 
@@ -309,10 +414,10 @@ HugeInteger HugeInteger::operator-(HugeInteger& other)
 
 HugeInteger HugeInteger::addOperation(HugeInteger& other, bool isOtherChanged)
 {
-	HugeInteger* newHugeInteger = new HugeInteger();
+	HugeInteger newHugeInteger;
 
 	if (!this->isPositive && !other.isPositive) {
-		newHugeInteger->isPositive = false;
+		newHugeInteger.isPositive = false;
 	}
 
 	if (isOtherChanged) { //change other's sign because it is not original 
@@ -330,8 +435,8 @@ HugeInteger HugeInteger::addOperation(HugeInteger& other, bool isOtherChanged)
 				sum %= 10;
 
 				if (i == this->hugeIntegerSize - 1) {
-					if (newHugeInteger->reverseHugeInteger[i + 1] == -1) {
-						newHugeInteger->reverseHugeInteger[i + 1] += onHand + 1; //reason of +1 is neutralize the -1
+					if (newHugeInteger.reverseHugeInteger[i + 1] == -1) {
+						newHugeInteger.reverseHugeInteger[i + 1] += onHand + 1; //reason of +1 is neutralize the -1
 					}
 				}
 				else {
@@ -339,7 +444,7 @@ HugeInteger HugeInteger::addOperation(HugeInteger& other, bool isOtherChanged)
 				}
 			}
 
-			newHugeInteger->reverseHugeInteger[i] = sum;
+			newHugeInteger.reverseHugeInteger[i] = sum;
 		}
 	}
 	else {
@@ -353,8 +458,8 @@ HugeInteger HugeInteger::addOperation(HugeInteger& other, bool isOtherChanged)
 				sum %= 10;
 
 				if (i == other.hugeIntegerSize - 1) {
-					if (newHugeInteger->reverseHugeInteger[i + 1] == -1) {
-						newHugeInteger->reverseHugeInteger[i + 1] += onHand + 1; //reason of +1 is neutralize the -1
+					if (newHugeInteger.reverseHugeInteger[i + 1] == -1) {
+						newHugeInteger.reverseHugeInteger[i + 1] += onHand + 1; //reason of +1 is neutralize the -1
 					}
 				}
 				else {
@@ -362,7 +467,7 @@ HugeInteger HugeInteger::addOperation(HugeInteger& other, bool isOtherChanged)
 				}
 			}
 
-			newHugeInteger->reverseHugeInteger[i] = sum;
+			newHugeInteger.reverseHugeInteger[i] = sum;
 		}
 	}
 
@@ -370,24 +475,23 @@ HugeInteger HugeInteger::addOperation(HugeInteger& other, bool isOtherChanged)
 	this->setReverseHugeInteger();
 	other.setReverseHugeInteger();
 
-	newHugeInteger->setSizeFromReverse();
+	newHugeInteger.setSizeFromReverse();
 
-	if (newHugeInteger->hugeIntegerSize > MAX_SIZE_OF_HUGE_INTEGER) {
-		std::invalid_argument* err = new std::invalid_argument("a huge integer cannot exceed 40 digits");
+	if (newHugeInteger.hugeIntegerSize > MAX_SIZE_OF_HUGE_INTEGER) {
+		std::invalid_argument err("a huge integer cannot exceed 40 digits");
+		std::cout << err.what() << std::endl;
 
-		std::cout << err->what() << std::endl;
-
-		throw* err;
+		throw err;
 	}
 
-	newHugeInteger->setHugeIntegerFromReverse();
+	newHugeInteger.setHugeIntegerFromReverse();
 
-	return *newHugeInteger;
+	return newHugeInteger;
 }
 
 HugeInteger HugeInteger::subtractOperation(HugeInteger& other)
 {
-	HugeInteger* newHugeInteger = new HugeInteger();
+	HugeInteger newHugeInteger;
 
 	bool itNeedRepairment = true;
 
@@ -408,15 +512,15 @@ HugeInteger HugeInteger::subtractOperation(HugeInteger& other)
 			}
 
 			int result = this->reverseHugeInteger[i] - other.reverseHugeInteger[i];
-			newHugeInteger->reverseHugeInteger[i] = result;
+			newHugeInteger.reverseHugeInteger[i] = result;
 		}
 	}
-	else if (this->isEqualTo(other)) {
-		newHugeInteger->reverseHugeInteger[0] = 0;
+	else if (this->isEqualAbsolute(other)) {
+		newHugeInteger.reverseHugeInteger[0] = 0;
 		itNeedRepairment = false;
 	}
 	else {
-		newHugeInteger->isPositive = false;
+		newHugeInteger.isPositive = false;
 
 		other.tuneSmallForOperations(*this);
 
@@ -434,7 +538,7 @@ HugeInteger HugeInteger::subtractOperation(HugeInteger& other)
 			}
 
 			int result = other.reverseHugeInteger[i] - this->reverseHugeInteger[i];
-			newHugeInteger->reverseHugeInteger[i] = result;
+			newHugeInteger.reverseHugeInteger[i] = result;
 		}
 	}
 
@@ -442,18 +546,125 @@ HugeInteger HugeInteger::subtractOperation(HugeInteger& other)
 	this->setReverseHugeInteger();
 	other.setReverseHugeInteger();
 
-	if (itNeedRepairment) { newHugeInteger->repairReverseIfZerosInTheBeginning(); }
-	newHugeInteger->setSizeFromReverse();
-	newHugeInteger->setHugeIntegerFromReverse();
+	if (itNeedRepairment) { newHugeInteger.repairReverseIfZerosInTheBeginning(); }
+	newHugeInteger.setSizeFromReverse();
+	newHugeInteger.setHugeIntegerFromReverse();
 
-	return *newHugeInteger;
+	return newHugeInteger;
 }
 
-void HugeInteger::printReverseHugeInt()
+HugeInteger HugeInteger::operator*(HugeInteger& other)
 {
-	for (int i = 0; i < MAX_SIZE_OF_HUGE_INTEGER + 1; i++) {
-		std::cout << reverseHugeInteger[i];
+	HugeInteger newHugeInteger;
+	HugeInteger temp = other;
+
+	if (this->isZero() || other.isZero()) {
+		newHugeInteger.hugeInteger[0] = 0;
+		newHugeInteger.hugeIntegerSize = 1;
+		newHugeInteger.isPositive = true;
+
+		return newHugeInteger;
 	}
 
-	std::cout << "\n";
+	if (temp.isPositive) {
+		for (; !temp.isZero(); --temp) {
+			newHugeInteger = newHugeInteger + *this;
+		}
+	}
+	else {
+		for (; !temp.isZero(); ++temp) {
+			newHugeInteger = newHugeInteger + *this;
+		}
+	}
+
+	if (!this->isPositive && !other.isPositive) {
+		newHugeInteger.isPositive = true;
+	}
+
+	if ((this->isPositive && !other.isPositive) || (!this->isPositive && other.isPositive)) {
+		newHugeInteger.isPositive = false;
+	}
+
+	return newHugeInteger;
 }
+
+HugeInteger HugeInteger::operator/(HugeInteger& other)
+{
+	HugeInteger newHugeInteger = "0";
+	HugeInteger tempBig;
+	HugeInteger tempSmall;
+
+	if (other.isZero()) {
+		std::logic_error err("The divisor cannot be zero");
+		std::cout << err.what() << std::endl;
+		throw err;
+	}
+
+	if (this->isGreaterThanAbsolute(other)) {
+		tempBig = *this;
+		tempSmall = other;
+
+		tempBig.isPositive = true;
+		tempSmall.isPositive = true;
+
+		while (tempBig.isGreaterThanAbsolute(tempSmall) || tempBig.isEqualAbsolute(tempSmall)) {
+			tempBig = tempBig - tempSmall;
+			++newHugeInteger;
+		}
+	}
+	else if (this->isEqualAbsolute(other)) {
+		return ++newHugeInteger;
+	}
+	else {
+		newHugeInteger.hugeInteger[0] = 0;
+		newHugeInteger.hugeIntegerSize = 1;
+		newHugeInteger.isPositive = true;
+
+		return newHugeInteger;
+	}
+
+	if ((this->isPositive && !other.isPositive) || (!this->isPositive && other.isPositive)) {
+		newHugeInteger.isPositive = false;
+	}
+
+	return newHugeInteger;
+}
+
+HugeInteger HugeInteger::operator%(HugeInteger& other)
+{
+	if (!other.isPositive) {
+		std::logic_error err("Modulus should be positive");
+		std::cout << err.what() << std::endl;
+
+		throw err;
+	}
+
+	HugeInteger temp = *this;
+
+	if (this->isGreaterThanAbsolute(other) || this->isEqualAbsolute(other)) {
+		if (this->isPositive) {
+			while (temp > other || temp == other) {
+				temp = temp - other;
+			}
+
+			return temp;
+		}
+		else {
+			while (!temp.isPositive) {
+				temp = temp + other;
+			}
+
+			return temp;
+		}
+	}
+	else {
+		if (!this->isPositive) {
+			temp = temp + other;
+			return temp;
+		}
+
+		return temp;
+	}
+}
+
+
